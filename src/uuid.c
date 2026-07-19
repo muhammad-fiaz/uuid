@@ -8,6 +8,10 @@
  * Zero third-party runtime dependencies.
  */
 
+#if defined(__linux__) && !defined(_POSIX_C_SOURCE)
+  #define _POSIX_C_SOURCE 200809L
+#endif
+
 #include "uuid/uuid.h"
 
 #include <stdio.h>

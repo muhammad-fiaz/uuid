@@ -250,21 +250,21 @@ jobs:
         run: conan profile detect --force
 
       - name: Install Conan deps
-        run: conan install . --output-folder=build-conan --build=missing -s build_type=Debug
+        run: conan install . --output-folder=build-conan-deps --build=missing -s build_type=Debug
 
       - name: Configure
         run: |
-          cmake -B build-conan -G Ninja \
+          cmake -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Debug \
-            -DCMAKE_TOOLCHAIN_FILE=build-conan/conan_toolchain.cmake \
+            -DCMAKE_TOOLCHAIN_FILE=build-conan-deps/conan_toolchain.cmake \
             -DUUID_BUILD_TESTS=ON \
             -DUUID_BUILD_EXAMPLES=ON
 
       - name: Build
-        run: cmake --build build-conan --parallel
+        run: cmake --build build --parallel
 
       - name: Test
-        run: ctest --test-dir build-conan --output-on-failure
+        run: ctest --test-dir build --output-on-failure
 
   vcpkg:
     name: vcpkg

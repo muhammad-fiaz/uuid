@@ -4,24 +4,24 @@ BasedOnStyle: LLVM
 IndentWidth: 4
 TabWidth: 4
 UseTab: Never
-ColumnLimit: 100
+ColumnLimit: 0
 
 # Alignment
-AlignAfterOpenBracket: Align
+AlignAfterOpenBracket: DontAlign
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
-AlignEscapedNewlines: Right
-AlignOperands: true
-AlignTrailingComments: true
+AlignEscapedNewlines: DontAlign
+AlignOperands: DontAlign
+AlignTrailingComments: false
 
 # Braces
-BreakBeforeBraces: Linux
+BreakBeforeBraces: Custom
 BraceWrapping:
   AfterCaseLabel: false
   AfterClass: false
   AfterControlStatement: Never
   AfterEnum: false
-  AfterFunction: true
+  AfterFunction: false
   AfterNamespace: false
   AfterStruct: false
   AfterUnion: false
@@ -71,15 +71,21 @@ SpacesInParentheses: false
 SpacesInSquareBrackets: false
 
 # Other
-BinPackArguments: false
-BinPackParameters: false
+BinPackArguments: true
+BinPackParameters: true
 BreakBeforeBinaryOperators: None
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializers: BeforeColon
 CompactNamespaces: false
 Cpp11BracedListStyle: true
 DerivePointerAlignment: false
-FixNamespaceComments: true
+FixNamespaceComments: false
 PointerAlignment: Right
-SortIncludes: CaseInsensitive
+SortIncludes: false
 SortUsingDeclarations: true
+AllowShortFunctionsOnASingleLine: All
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortBlocksOnASingleLine: Empty
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortLambdasOnASingleLine: All
