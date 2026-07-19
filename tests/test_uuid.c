@@ -296,8 +296,8 @@ TEST(v8_custom_bytes) {
 TEST(v8_custom_data_preserved) {
     uuid_t uuid;
     uint8_t custom[12] = {0xAA,0xBB,0xCC,0xDD,0xEE,0xFF,0x11,0x22,0x33,0x44,0x55,0x66};
-    ASSERT_OK(uuid_v8(&uuid, custom));
     uint8_t expected[12];
+    ASSERT_OK(uuid_v8(&uuid, custom));
     memcpy(expected, custom, 12);
     expected[6] = (uint8_t)((custom[6] & 0x0F) | 0x80);
     expected[8] = (uint8_t)((custom[8] & 0x3F) | 0x80);
@@ -722,6 +722,7 @@ TEST(strerror_all_codes) {
 
 TEST(null_checks) {
     uuid_t uuid;
+    uuid_init_nil(&uuid);
     ASSERT(uuid_init_nil(NULL) != UUID_OK);
     ASSERT(uuid_init_max(NULL) != UUID_OK);
     ASSERT(uuid_copy(NULL, &uuid) != UUID_OK);
@@ -754,7 +755,7 @@ TEST(serialize_buffer_too_small) {
 
 TEST(deserialize_buffer_too_small) {
     uuid_t uuid;
-    uint8_t buf[8];
+    uint8_t buf[8] = {0};
     ASSERT(uuid_deserialize(&uuid, buf, sizeof(buf)) == UUID_E_BUFFER_TOO_SMALL);
 }
 
@@ -880,14 +881,13 @@ TEST(last_error) {
 }
 
 TEST(v3_rfc_vector) {
-    uuid_t ns, uuid;
+    uuid_t ns, uuid, uuid2;
     /* RFC 9562 Section D.3: UUIDv3 with DNS namespace */
     ASSERT_OK(uuid_namespace(UUID_NS_DNS, &ns));
     ASSERT_OK(uuid_v3(&ns, "www.example.com", 15, &uuid));
     ASSERT_EQ(uuid_version(&uuid), 3);
     ASSERT_EQ(uuid_variant(&uuid), UUID_VARIANT_RFC_4122);
     /* Deterministic: same input must produce same output */
-    uuid_t uuid2;
     ASSERT_OK(uuid_v3(&ns, "www.example.com", 15, &uuid2));
     ASSERT(uuid_compare(&uuid, &uuid2) == 0);
     /* Different name must produce different UUID */
@@ -896,18 +896,16 @@ TEST(v3_rfc_vector) {
 }
 
 TEST(v5_rfc_vector) {
-    uuid_t ns, uuid;
+    uuid_t ns, uuid, uuid2, uuid3;
     /* RFC 9562 Section D.4: UUIDv5 with DNS namespace */
     ASSERT_OK(uuid_namespace(UUID_NS_DNS, &ns));
     ASSERT_OK(uuid_v5(&ns, "www.example.com", 15, &uuid));
     ASSERT_EQ(uuid_version(&uuid), 5);
     ASSERT_EQ(uuid_variant(&uuid), UUID_VARIANT_RFC_4122);
     /* Deterministic */
-    uuid_t uuid2;
     ASSERT_OK(uuid_v5(&ns, "www.example.com", 15, &uuid2));
     ASSERT(uuid_compare(&uuid, &uuid2) == 0);
     /* v3 and v5 must differ for same input */
-    uuid_t uuid3;
     ASSERT_OK(uuid_v3(&ns, "www.example.com", 15, &uuid3));
     ASSERT(uuid_compare(&uuid, &uuid3) != 0);
 }

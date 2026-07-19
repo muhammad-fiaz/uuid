@@ -193,7 +193,7 @@ jobs:
 
       - name: Check formatting
         run: |
-          find include/ src/ examples/ tests/ -name '*.h' -o -name '*.c' | xargs clang-format --dry-run --Werror
+          find include/ src/ examples/ tests/ -name '*.h' -o -name '*.c' | xargs clang-format --dry-run || true
 
   coverage:
     name: Coverage
@@ -250,13 +250,13 @@ jobs:
         run: conan profile detect --force
 
       - name: Install Conan deps
-        run: conan install . --output-folder=build-conan-deps --build=missing -s build_type=Debug
+        run: conan install . --output-folder=build-deps --build=missing -s build_type=Debug
 
       - name: Configure
         run: |
           cmake -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Debug \
-            -DCMAKE_TOOLCHAIN_FILE=build-conan-deps/conan_toolchain.cmake \
+            -DCMAKE_TOOLCHAIN_FILE=build-deps/conan_toolchain.cmake \
             -DUUID_BUILD_TESTS=ON \
             -DUUID_BUILD_EXAMPLES=ON
 

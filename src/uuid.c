@@ -89,6 +89,10 @@ static void uuid_set_error(const char *msg) {
 /* ── Error Messages ───────────────────────────────────────────────────── */
 
 const char *uuid_strerror(uuid_error_t error) {
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wcovered-switch-default"
+#endif
     switch (error) {
         case UUID_OK:                 return "Success";
         case UUID_E_INVALID_ARG:      return "Invalid argument";
@@ -107,6 +111,9 @@ const char *uuid_strerror(uuid_error_t error) {
         case UUID_E_TIMEOUT:          return "Operation timed out";
         default:                      return "Unknown error";
     }
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 }
 
 /* ── Hex Helpers ──────────────────────────────────────────────────────── */
@@ -812,10 +819,10 @@ static void uuid_md5_transform(uint32_t state[4], const uint8_t block[64]) {
     #define MD5_H(x,y,z) ((x) ^ (y) ^ (z))
     #define MD5_I(x,y,z) ((y) ^ ((x) | (~z)))
     #define MD5_ROT(x,n) (((x) << (n)) | ((x) >> (32-(n))))
-    #define MD5_FF(a,b,c,d,x,k,s) { (a) += MD5_F((b),(c),(d)) + (x) + (k); (a) = MD5_ROT((a),(s)); (a) += (b); }
-    #define MD5_GG(a,b,c,d,x,k,s) { (a) += MD5_G((b),(c),(d)) + (x) + (k); (a) = MD5_ROT((a),(s)); (a) += (b); }
-    #define MD5_HH(a,b,c,d,x,k,s) { (a) += MD5_H((b),(c),(d)) + (x) + (k); (a) = MD5_ROT((a),(s)); (a) += (b); }
-    #define MD5_II(a,b,c,d,x,k,s) { (a) += MD5_I((b),(c),(d)) + (x) + (k); (a) = MD5_ROT((a),(s)); (a) += (b); }
+    #define MD5_FF(a,b,c,d,x,k,s) do { (a) += MD5_F((b),(c),(d)) + (x) + (k); (a) = MD5_ROT((a),(s)); (a) += (b); } while(0)
+    #define MD5_GG(a,b,c,d,x,k,s) do { (a) += MD5_G((b),(c),(d)) + (x) + (k); (a) = MD5_ROT((a),(s)); (a) += (b); } while(0)
+    #define MD5_HH(a,b,c,d,x,k,s) do { (a) += MD5_H((b),(c),(d)) + (x) + (k); (a) = MD5_ROT((a),(s)); (a) += (b); } while(0)
+    #define MD5_II(a,b,c,d,x,k,s) do { (a) += MD5_I((b),(c),(d)) + (x) + (k); (a) = MD5_ROT((a),(s)); (a) += (b); } while(0)
 
     MD5_FF(a,b,c,d,x[ 0],0xd76aa478, 7); MD5_FF(d,a,b,c,x[ 1],0xe8c7b756,12);
     MD5_FF(c,d,a,b,x[ 2],0x242070db,17); MD5_FF(b,c,d,a,x[ 3],0xc1bdceee,22);
