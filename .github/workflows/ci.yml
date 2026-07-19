@@ -249,19 +249,9 @@ jobs:
       - name: Install Conan profile
         run: conan profile detect --force
 
-      - name: Install Conan deps
-        run: conan install . --output-folder=build-deps --build=missing -s build_type=Debug
-
-      - name: Configure
+      - name: Build via Conan
         run: |
-          cmake -B build -G Ninja \
-            -DCMAKE_BUILD_TYPE=Debug \
-            -DCMAKE_TOOLCHAIN_FILE=build-deps/conan_toolchain.cmake \
-            -DUUID_BUILD_TESTS=ON \
-            -DUUID_BUILD_EXAMPLES=ON
-
-      - name: Build
-        run: cmake --build build --parallel
+          conan build . --output-folder=build --build=missing -s build_type=Debug
 
       - name: Test
         run: ctest --test-dir build --output-on-failure
