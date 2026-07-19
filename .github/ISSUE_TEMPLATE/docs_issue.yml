@@ -1,0 +1,19 @@
+name: Documentation Issue
+description: Report an issue with the documentation
+title: "[Docs]: "
+labels: ["documentation"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Documentation issue
+      description: Describe the documentation issue (wrong info, missing content, typo, etc.)
+    validations:
+      required: true
+
+  - type: input
+    id: page
+    attributes:
+      label: Page URL
+      description: Which documentation page has the issue?
+      placeholder: "https://muhammad-fiaz.github.io/uuid/api/overview"

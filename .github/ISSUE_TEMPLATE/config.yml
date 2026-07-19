@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://muhammad-fiaz.github.io/uuid
+    about: Check the documentation for usage guides and API reference
+  - name: Sponsor
+    url: https://github.com/sponsors/muhammad-fiaz
+    about: Support the project via GitHub Sponsors

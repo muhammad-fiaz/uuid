@@ -1,0 +1,261 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "default",
+      "displayName": "Default",
+      "description": "Default build directory (Release, static+shared)",
+      "binaryDir": "${sourceDir}/build",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "UUID_BUILD_SHARED": "ON",
+        "UUID_BUILD_STATIC": "ON",
+        "UUID_BUILD_TESTS": "OFF",
+        "UUID_BUILD_EXAMPLES": "OFF",
+        "UUID_BUILD_BENCHMARKS": "OFF"
+      }
+    },
+    {
+      "name": "debug",
+      "displayName": "Debug",
+      "description": "Debug build with tests, examples, and benchmarks",
+      "binaryDir": "${sourceDir}/build-debug",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "UUID_BUILD_SHARED": "ON",
+        "UUID_BUILD_STATIC": "ON",
+        "UUID_BUILD_TESTS": "ON",
+        "UUID_BUILD_EXAMPLES": "ON",
+        "UUID_BUILD_BENCHMARKS": "ON",
+        "UUID_WERROR": "ON"
+      }
+    },
+    {
+      "name": "release",
+      "displayName": "Release",
+      "description": "Release build (optimized)",
+      "binaryDir": "${sourceDir}/build-release",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "UUID_BUILD_SHARED": "ON",
+        "UUID_BUILD_STATIC": "ON",
+        "UUID_BUILD_TESTS": "OFF",
+        "UUID_BUILD_EXAMPLES": "OFF",
+        "UUID_BUILD_BENCHMARKS": "OFF"
+      }
+    },
+    {
+      "name": "static-only",
+      "displayName": "Static Only",
+      "description": "Static library only (no shared)",
+      "binaryDir": "${sourceDir}/build-static",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "UUID_BUILD_SHARED": "OFF",
+        "UUID_BUILD_STATIC": "ON"
+      }
+    },
+    {
+      "name": "shared-only",
+      "displayName": "Shared Only",
+      "description": "Shared library only (no static)",
+      "binaryDir": "${sourceDir}/build-shared",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "UUID_BUILD_SHARED": "ON",
+        "UUID_BUILD_STATIC": "OFF"
+      }
+    },
+    {
+      "name": "coverage",
+      "displayName": "Coverage",
+      "description": "Debug build with code coverage",
+      "binaryDir": "${sourceDir}/build-coverage",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "UUID_BUILD_SHARED": "OFF",
+        "UUID_BUILD_STATIC": "ON",
+        "UUID_BUILD_TESTS": "ON",
+        "CMAKE_C_FLAGS": "--coverage -fprofile-arcs -ftest-coverage"
+      }
+    },
+    {
+      "name": "sanitize-address",
+      "displayName": "AddressSanitizer",
+      "description": "Debug build with ASAN + UBSAN",
+      "binaryDir": "${sourceDir}/build-asan",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "UUID_BUILD_SHARED": "OFF",
+        "UUID_BUILD_STATIC": "ON",
+        "UUID_BUILD_TESTS": "ON",
+        "CMAKE_C_FLAGS": "-fsanitize=address,undefined -fno-omit-frame-pointer -g"
+      }
+    },
+    {
+      "name": "sanitize-thread",
+      "displayName": "ThreadSanitizer",
+      "description": "Debug build with TSAN",
+      "binaryDir": "${sourceDir}/build-tsan",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "UUID_BUILD_SHARED": "OFF",
+        "UUID_BUILD_STATIC": "ON",
+        "UUID_BUILD_TESTS": "ON",
+        "CMAKE_C_FLAGS": "-fsanitize=thread -g"
+      }
+    },
+    {
+      "name": "vcpkg",
+      "displayName": "vcpkg",
+      "description": "Build with vcpkg toolchain",
+      "binaryDir": "${sourceDir}/build-vcpkg",
+      "generator": "Ninja",
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "UUID_BUILD_SHARED": "ON",
+        "UUID_BUILD_STATIC": "ON"
+      }
+    },
+    {
+      "name": "conan",
+      "displayName": "Conan",
+      "description": "Build with Conan toolchain",
+      "binaryDir": "${sourceDir}/build-conan",
+      "generator": "Ninja",
+      "toolchainFile": "${sourceDir}/build-conan/conan_toolchain.cmake",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "UUID_BUILD_SHARED": "ON",
+        "UUID_BUILD_STATIC": "ON"
+      }
+    },
+    {
+      "name": "msvc",
+      "displayName": "MSVC",
+      "description": "Visual Studio generator (Windows)",
+      "generator": "Visual Studio 17 2022",
+      "architecture": {
+        "value": "x64",
+        "strategy": "set"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "UUID_BUILD_SHARED": "ON",
+        "UUID_BUILD_STATIC": "ON",
+        "UUID_BUILD_TESTS": "ON",
+        "UUID_BUILD_EXAMPLES": "ON",
+        "UUID_BUILD_BENCHMARKS": "ON"
+      }
+    },
+    {
+      "name": "mingw",
+      "displayName": "MinGW",
+      "description": "MinGW Makefiles (Windows, GCC)",
+      "binaryDir": "${sourceDir}/build-mingw",
+      "generator": "MinGW Makefiles",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "UUID_BUILD_SHARED": "ON",
+        "UUID_BUILD_STATIC": "ON",
+        "UUID_BUILD_TESTS": "ON",
+        "UUID_BUILD_EXAMPLES": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default"
+    },
+    {
+      "name": "debug",
+      "configurePreset": "debug"
+    },
+    {
+      "name": "release",
+      "configurePreset": "release"
+    },
+    {
+      "name": "static-only",
+      "configurePreset": "static-only"
+    },
+    {
+      "name": "shared-only",
+      "configurePreset": "shared-only"
+    },
+    {
+      "name": "coverage",
+      "configurePreset": "coverage"
+    },
+    {
+      "name": "sanitize-address",
+      "configurePreset": "sanitize-address"
+    },
+    {
+      "name": "sanitize-thread",
+      "configurePreset": "sanitize-thread"
+    },
+    {
+      "name": "vcpkg",
+      "configurePreset": "vcpkg"
+    },
+    {
+      "name": "conan",
+      "configurePreset": "conan"
+    },
+    {
+      "name": "msvc",
+      "configurePreset": "msvc",
+      "configuration": "Release"
+    },
+    {
+      "name": "mingw",
+      "configurePreset": "mingw"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "debug",
+      "configurePreset": "debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "coverage",
+      "configurePreset": "coverage",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "sanitize-address",
+      "configurePreset": "sanitize-address",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "sanitize-thread",
+      "configurePreset": "sanitize-thread",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,299 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Linux GCC
+          - name: Linux GCC
+            os: ubuntu-latest
+            cc: gcc
+            cxx: g++
+            build_type: Debug
+            sanitizer: none
+
+          - name: Linux GCC Release
+            os: ubuntu-latest
+            cc: gcc
+            cxx: g++
+            build_type: Release
+            sanitizer: none
+
+          # Linux Clang
+          - name: Linux Clang
+            os: ubuntu-latest
+            cc: clang
+            cxx: clang++
+            build_type: Debug
+            sanitizer: none
+
+          - name: Linux Clang ASAN
+            os: ubuntu-latest
+            cc: clang
+            cxx: clang++
+            build_type: Debug
+            sanitizer: address
+
+          - name: Linux Clang UBSAN
+            os: ubuntu-latest
+            cc: clang
+            cxx: clang++
+            build_type: Debug
+            sanitizer: undefined
+
+          # macOS
+          - name: macOS Clang
+            os: macos-latest
+            cc: clang
+            cxx: clang++
+            build_type: Debug
+            sanitizer: none
+
+          # Windows MSVC
+          - name: Windows MSVC
+            os: windows-latest
+            cc: cl
+            cxx: cl
+            build_type: Debug
+            sanitizer: none
+
+          # C17 Standard
+          - name: Linux GCC C17
+            os: ubuntu-latest
+            cc: gcc
+            cxx: g++
+            build_type: Debug
+            sanitizer: none
+            c_standard: 17
+
+          # C23 Standard
+          - name: Linux GCC C23
+            os: ubuntu-latest
+            cc: gcc
+            cxx: g++
+            build_type: Debug
+            sanitizer: none
+            c_standard: 23
+
+          # TSAN (Thread Sanitizer)
+          - name: Linux Clang TSAN
+            os: ubuntu-latest
+            cc: clang
+            cxx: clang++
+            build_type: Debug
+            sanitizer: thread
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build
+
+      - name: Install dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: brew install cmake ninja
+
+      - name: Install dependencies (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          if (!(Get-Command cmake -ErrorAction SilentlyContinue)) {
+            choco install cmake --no-progress -y
+          }
+          if (!(Get-Command ninja -ErrorAction SilentlyContinue)) {
+            choco install ninja --no-progress -y
+          }
+
+      - name: Configure (CMake)
+        shell: bash
+        run: |
+          CMAKE_ARGS=""
+          if [ "${{ matrix.cc }}" != "cl" ]; then
+            CMAKE_ARGS="-DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }}"
+          fi
+
+          if [ -n "${{ matrix.c_standard }}" ]; then
+            CMAKE_ARGS="${CMAKE_ARGS} -DCMAKE_C_STANDARD=${{ matrix.c_standard }}"
+          fi
+
+          SANITIZER_ARGS=""
+          if [ "${{ matrix.sanitizer }}" = "address" ]; then
+            SANITIZER_ARGS="-DCMAKE_C_FLAGS=-fsanitize=address -DCMAKE_CXX_FLAGS=-fsanitize=address -DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address"
+          elif [ "${{ matrix.sanitizer }}" = "undefined" ]; then
+            SANITIZER_ARGS="-DCMAKE_C_FLAGS=-fsanitize=undefined -DCMAKE_CXX_FLAGS=-fsanitize=undefined -DCMAKE_EXE_LINKER_FLAGS=-fsanitize=undefined"
+          elif [ "${{ matrix.sanitizer }}" = "thread" ]; then
+            SANITIZER_ARGS="-DCMAKE_C_FLAGS=-fsanitize=thread -DCMAKE_CXX_FLAGS=-fsanitize=thread -DCMAKE_EXE_LINKER_FLAGS=-fsanitize=thread"
+          fi
+
+          cmake -B build \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DUUID_BUILD_TESTS=ON \
+            -DUUID_BUILD_EXAMPLES=ON \
+            -DUUID_WERROR=ON \
+            ${CMAKE_ARGS} \
+            ${SANITIZER_ARGS}
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+  clang-tidy:
+    name: Static Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build clang-tidy
+
+      - name: Configure
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DUUID_BUILD_TESTS=ON \
+            -DCMAKE_C_CLANG_TIDY=clang-tidy
+
+      - name: Build
+        run: cmake --build build --parallel
+
+  clang-format:
+    name: Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install clang-format
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format
+
+      - name: Check formatting
+        run: |
+          find include/ src/ examples/ tests/ -name '*.h' -o -name '*.c' | xargs clang-format --dry-run --Werror
+
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build gcovr
+
+      - name: Configure
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DUUID_BUILD_TESTS=ON \
+            -DUUID_BUILD_EXAMPLES=ON \
+            -DCMAKE_C_FLAGS="--coverage -fprofile-arcs -ftest-coverage" \
+            -DCMAKE_EXE_LINKER_FLAGS="--coverage"
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Generate coverage report
+        run: gcovr --root . --filter src/ --filter include/ --xml -o coverage.xml build
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage.xml
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  conan:
+    name: Conan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build python3-pip
+          pip3 install conan
+
+      - name: Install Conan profile
+        run: conan profile detect --force
+
+      - name: Install Conan deps
+        run: conan install . --output-folder=build-conan --build=missing -s build_type=Debug
+
+      - name: Configure
+        run: |
+          cmake -B build-conan -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_TOOLCHAIN_FILE=build-conan/conan_toolchain.cmake \
+            -DUUID_BUILD_TESTS=ON \
+            -DUUID_BUILD_EXAMPLES=ON
+
+      - name: Build
+        run: cmake --build build-conan --parallel
+
+      - name: Test
+        run: ctest --test-dir build-conan --output-on-failure
+
+  vcpkg:
+    name: vcpkg
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install vcpkg
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git /opt/vcpkg
+          /opt/vcpkg/bootstrap-vcpkg.sh -disableMetrics
+          echo "VCPKG_ROOT=/opt/vcpkg" >> $GITHUB_ENV
+
+      - name: Install dependencies
+        run: |
+          # vcpkg uses manifest mode with vcpkg.json - deps installed during configure
+          true
+
+      - name: Configure
+        run: |
+          cmake -B build-vcpkg -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_TOOLCHAIN_FILE=/opt/vcpkg/scripts/buildsystems/vcpkg.cmake \
+            -DUUID_BUILD_TESTS=ON \
+            -DUUID_BUILD_EXAMPLES=ON
+
+      - name: Build
+        run: cmake --build build-vcpkg --parallel
+
+      - name: Test
+        run: ctest --test-dir build-vcpkg --output-on-failure

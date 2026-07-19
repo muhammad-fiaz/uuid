@@ -1,0 +1,16 @@
+{
+  "name": "uuid",
+  "short_name": "uuid",
+  "description": "Production-grade UUID library for C/C++",
+  "start_url": "/uuid/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "/uuid/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

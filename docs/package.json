@@ -1,0 +1,15 @@
+{
+  "name": "uuid-docs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "docs:build": "vitepress build",
+    "docs:preview": "vitepress preview",
+    "preview": "vitepress preview"
+  },
+  "devDependencies": {
+    "vitepress": "^1.6.4"
+  }
+}

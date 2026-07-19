@@ -1,0 +1,32 @@
+name: Feature Request
+description: Suggest a new feature for the uuid library
+title: "[Feat]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a feature! Please describe what you'd like.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Feature description
+      description: A clear description of the feature you want.
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: Why is this feature important? What problem does it solve?
+    validations:
+      required: true
+
+  - type: textarea
+    id: api
+    attributes:
+      label: Proposed API
+      description: If you have a concrete API design, describe it here.
+      render: c

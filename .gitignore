@@ -1,0 +1,83 @@
+# Build directories
+build/
+build-*/
+cmake-build-*/
+out/
+*.o
+*.obj
+
+# Compiled Libraries
+*.a
+*.lib
+*.so
+*.so.*
+*.dylib
+*.dll
+*.dll.a
+*.exp
+*.pdb
+
+# Executables
+*.exe
+*.out
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+CTestTestfile.cmake
+_deps/
+Testing/
+__cmake_systeminformation/
+CUserPresets.json
+
+# Meson
+meson-private/
+meson-info/
+meson-logs/
+builddir/
+build.ninja
+.ninja*
+
+# Conan
+conanprofile*
+conan_toolchain.cmake
+CMakeUserPresets.json
+conandata.yml
+
+# vcpkg
+vcpkg_installed/
+
+# Node (docs)
+docs/node_modules/
+docs/.vitepress/cache/
+docs/.vitepress/dist/
+
+# Coverage
+*.gcda
+*.gcno
+*.gcov
+coverage.xml
+htmlcov/
+*.profraw
+*.profdata
+
+# Misc
+.cache/
+.ccls-cache/
+.clangd/
+.vs/
+*.suo
+*.user
+*.ncb
+*.sdf
