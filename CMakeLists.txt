@@ -44,9 +44,6 @@ else()
     if(UUID_WERROR)
         add_compile_options(-Werror)
     endif()
-    if(CMAKE_C_COMPILER_ID MATCHES "Clang")
-        add_compile_options(-Wno-unsafe-buffer-usage)
-    endif()
 endif()
 
 # ── Source Files ─────────────────────────────────────────────────────────
