@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitepress'
+import llmstxt from 'vitepress-plugin-llms'
 
 const siteName = 'uuid'
 const siteDescription = 'Production-grade UUID library for C/C++ implementing RFC 9562'
@@ -9,19 +10,51 @@ const defaultOgImage = `${siteUrl}${siteBase}logo.svg`
 function toDocPath(relativePath: string): string {
   const normalized = relativePath.replace(/\\/g, '/').replace(/\.md$/, '')
   if (normalized === '' || normalized === 'index') return ''
-  if (normalized.endsWith('/index')) return normalized.slice(0, -6)
+  if (normalized.endsWith('/index')) return normalized.slice(0, -'index'.length)
   return normalized
 }
 
 function toCanonicalUrl(relativePath: string): string {
   const docPath = toDocPath(relativePath)
-  return docPath ? `${siteUrl}${siteBase}${docPath}` : `${siteUrl}${siteBase}`
+  if (!docPath) return `${siteUrl}${siteBase}`
+  // cleanUrls is disabled: regular pages are published as .html files while
+  // directory index pages keep their trailing slash.
+  return docPath.endsWith('/')
+    ? `${siteUrl}${siteBase}${docPath}`
+    : `${siteUrl}${siteBase}${docPath}.html`
 }
 
 function toAbsoluteUrl(pathOrUrl: string): string {
   if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl
   const cleaned = pathOrUrl.startsWith('/') ? pathOrUrl.slice(1) : pathOrUrl
   return `${siteUrl}${siteBase}${cleaned}`
+}
+
+function toBreadcrumbHead(pageData: { relativePath: string; title?: string | null }): any[] {
+  if (pageData.relativePath === '404.md') return []
+  const docPath = toDocPath(pageData.relativePath)
+  const parts = docPath.split('/').filter(Boolean)
+  if (parts.length === 0) return []
+
+  return [
+    [
+      'script',
+      { type: 'application/ld+json' },
+      JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: `${siteUrl}${siteBase}` },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: pageData.title || parts[parts.length - 1],
+            item: toCanonicalUrl(pageData.relativePath),
+          },
+        ],
+      }),
+    ],
+  ]
 }
 
 export default defineConfig({
@@ -34,6 +67,10 @@ export default defineConfig({
 
     lastUpdated: true,
     cleanUrls: false,
+
+    vite: {
+      plugins: [llmstxt()]
+    },
 
     head: [
       ['meta', { name: 'author', content: 'Muhammad Fiaz' }],
@@ -48,8 +85,8 @@ export default defineConfig({
       ['meta', { name: 'robots', content: 'index, follow' }],
 
       // Favicon
-      ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
-      ['link', { rel: 'manifest', href: '/manifest.json' }],
+      ['link', { rel: 'icon', type: 'image/svg+xml', href: `${siteBase}favicon.svg` }],
+      ['link', { rel: 'manifest', href: `${siteBase}manifest.json` }],
       ['meta', { name: 'theme-color', content: '#2563eb' }],
 
       // Open Graph
@@ -97,6 +134,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2040560600290490',
           crossorigin: 'anonymous'
         }
+      ],
+
+      // Microsoft Clarity
+      [
+        'script',
+        {},
+        `(function(c,l,a,r,i,t,y){
+          c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+          t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+          y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window, document, "clarity", "script", "z5vdzih779");`
       ],
 
       // JSON-LD Structured Data
@@ -148,15 +196,23 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       const ogTitle = title === siteName ? siteName : `${title} | ${siteName}`
 
       return [
-        ['link', { rel: 'canonical', href: canonical }],
+        ...(pageData.relativePath === '404.md'
+          ? []
+          : [['link', { rel: 'canonical', href: canonical }]]),
         ['meta', { property: 'og:title', content: ogTitle }],
         ['meta', { property: 'og:description', content: description }],
         ['meta', { property: 'og:url', content: canonical }],
         ['meta', { property: 'og:image', content: ogImage }],
         ['meta', { name: 'twitter:title', content: ogTitle }],
         ['meta', { name: 'twitter:description', content: description }],
-        ['meta', { name: 'twitter:image', content: ogImage }]
+        ['meta', { name: 'twitter:image', content: ogImage }],
+        ...toBreadcrumbHead(pageData)
       ]
+    },
+
+    transformHtml(html) {
+      const noscript = `<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P4M9T8ZR" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>`
+      return html.replace(/<body([^>]*)>/, `<body$1>\n    ${noscript}`)
     },
 
     themeConfig: {
@@ -298,6 +354,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     },
 
     sitemap: {
-      hostname: 'https://muhammad-fiaz.github.io/uuid'
+      hostname: 'https://muhammad-fiaz.github.io/uuid/'
     }
   })
